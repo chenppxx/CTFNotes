@@ -464,3 +464,45 @@ c的值为`$pi=base_convert(37907361743,10,36)(dechex(1598506324));($$pi){pi}(($
 
 接下来使用盲注脚本即可
 
+
+
+# buuctf ssrf me
+
+拿到flask应用的源码,利用chatgpt整理一下
+
+大概内容:
+
+三个路由:
+
+- /geneSign
+	传递参数param和设置好的action=scan传入getSign生成签名
+- /De1ta
+	从cookie中获取action和sign，再获取参数param以及ip然后传入Task类中，以json形式返回Task->Exec()
+- /
+	首页，读取code.txt中的源码返回
+
+思路:
+
+在/De1ta中传入param=flag.txt,再想办法让action同时包括read和scan
+
+难点在于验证签名
+
+```
+    def checkSign(self):
+        if (getSign(self.action, self.param) == self.sign):
+            return True
+        else:
+            return False
+
+```
+
+```
+def getSign(action, param):
+    return hashlib.md5(secert_key + param + action).hexdigest()
+
+```
+
+首先访问下`/geneSign`路由，传参`param=flag.txt`，拿到这个签名
+
+接下来利用哈希拓展脚本--`hash_ext_attack.py`来预测签名
+
