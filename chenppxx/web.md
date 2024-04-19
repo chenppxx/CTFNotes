@@ -1213,3 +1213,133 @@ user的值肯定要改成全是flag或者php的格式,其长度有后面部分�
 	#这是绕过escapeshellarg的命令
 
 	最后要访问`uuuu'`文件
+
+
+
+## 哈希长度拓展攻击
+
+工具:
+
+E:>>CTF>>xuezhang-CTF>>CTF_tools>>web>>hash-ext-attack
+
+
+
+## SSI 远程命令执行漏洞（SSI注入漏洞）
+
+### SSI 服务器端包含
+SSI（server-side includes）能帮我们实现什么功能：
+SSI提供了一种对现有HTML文档增加动态内容的方法，即在html中加入动态内容。
+
+SSI是嵌入HTML页面中的指令，在页面被提供时由服务器进行运算，以对现有HTML页面增加动态生成的内容，而无须通过CGI程序提供其整个页面，或者使用其他动态技术。
+
+从技术角度上来说，SSI就是在HTML文件中，可以通过注释行调用的命令或指针，即允许通过在HTML页面注入脚本或远程执行任意命令。
+
+在测试任意文件上传漏洞的时候，目标服务端可能不允许上传php后缀的文件。如果目标服务器开启了SSI与CGI支持，我们可以上传一个shtml文件，并利用`<!--#exec cmd="ls /" -->`语法执行任意命令。
+
+
+### Apache SSI 远程命令执行漏洞
+当目标服务器开启了SSI与CGI支持，我们就可以上传shtml，利用`<!--#exec cmd="ls /" -->`语法来执行命令。
+
+使用SSI(Server Side Include)的html文件扩展名，SSI（Server Side Include)，通常称为"服务器端嵌入"或者叫"服务器端包含"，是一种类似于ASP的基于服务器的网页制作技术。默认扩展名是 .stm、.shtm 和 .shtml。
+
+
+
+## nginx配置文件存放的位置
+
+- 配置文件存放目录：/etc/nginx
+- 主配置文件：/etc/nginx/conf/nginx.conf
+- 管理脚本：/usr/lib64/systemd/system/nginx.service
+- 模块：/usr/lisb64/nginx/modules
+- 应用程序：/usr/sbin/nginx
+- 程序默认存放位置：/usr/share/nginx/html
+- 日志默认存放位置：/var/log/nginx
+- 配置文件目录为：/usr/local/nginx/conf/nginx.conf
+	
+
+
+
+## urlparse函数用于解析url
+
+以下是chatgpt的解释:
+
+`urlparse` 函数用于解析 URL（Uniform Resource Locator，统一资源定位符），将其拆分为几个组成部分，包括协议、网络位置（hostname）、路径、参数、查询和片段等。其语法如下：
+
+```
+pythonCopy Codeurllib.parse.urlparse(urlstring, scheme='', allow_fragments=True)
+```
+
+参数解释如下：
+
+- `urlstring`：要解析的 URL 字符串。
+- `scheme`：可选参数，如果 URL 没有指定协议部分，则使用此参数指定的协议。
+- `allow_fragments`：可选参数，指定是否允许解析片段（fragment）部分，默认为 True，表示允许解析。
+
+`urlparse` 函数返回一个包含解析结果的命名元组，其中包括 `scheme`、`netloc`、`path`、`params`、`query` 和 `fragment` 等属性，分别对应 URL 中的不同部分
+
+例如:
+
+```
+from urllib.parse import urlparse
+
+url = "https://www.example.com/path/to/resource?param1=value1&param2=value2#section1"
+
+# 解析 URL
+parsed_url = urlparse(url)
+
+# 获取各个部分
+scheme = parsed_url.scheme
+netloc = parsed_url.netloc
+path = parsed_url.path
+params = parsed_url.params
+query = parsed_url.query
+fragment = parsed_url.fragment
+
+# 打印各个部分
+print("Scheme:", scheme)
+print("Netloc:", netloc)
+print("Path:", path)
+print("Params:", params)
+print("Query:", query)
+print("Fragment:", fragment)
+```
+
+以上代码将输出以下结果:
+
+```
+Scheme: https
+Netloc: www.example.com
+Path: /path/to/resource
+Params: 
+Query: param1=value1&param2=value2
+Fragment: section1
+```
+
+
+
+## idna与utf-8编码漏洞
+
+```
+℆这个字符,如果使用python3进行idna编码的话
+print('℆'.encode('idna'))
+结果
+b'c/u'
+如果再使用utf-8进行解码的话
+print(b'c/u'.decode('utf-8'))
+结果
+c/u
+通过这种方法可以绕过网站的一些过滤字符
+```
+
+
+
+## 计算pin码
+
+```
+username：  运行该Flask程序的用户名  /etc/passwd文件内
+modname：   模块名  flask.app
+getattr()： app名，值为Flask
+getattr()： Flask目录下的一个app.py的绝对路径，这个值可以在报错页面看到。但有个需注意，Python3是 app.py，Python2中是app.pyc。  报错页面回显(访问报错界面 输入不能识别的参数)
+str(uuid.getnode())：  MAC地址，读取这两个文件地址：/sys/class/net/eth0/address或者/sys/class/net/ens33/address
+get_machine_id()：  系统id  /etc/machine-id    或者docker环境id /proc/self/cgroup
+```
+
