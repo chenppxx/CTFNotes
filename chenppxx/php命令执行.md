@@ -1,5 +1,7 @@
 # 注意事项
 
+# docker
+
 因为对于docker不熟悉以及bash,dash不太懂有几个注意事项
 
 - docker exec -it [docker id] /bin/bash 进入docker容器中
@@ -22,6 +24,26 @@
 
 	此外，补充一个**开启已有容器，就立即进入交互模式**的命令：
 	`docker start -a -i [container_id or container_name]`
+
+
+
+## --在一个docker文件中配置docker环境
+
+先进入docker文件目录
+
+对靶场进行编译：
+
+`docker-compose build`
+
+运行靶场：
+
+`docker-compose up -d`
+
+查看当前靶场环境,端口:
+
+`docker ps`
+
+
 
 
 

