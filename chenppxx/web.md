@@ -1343,3 +1343,16 @@ str(uuid.getnode())：  MAC地址，读取这两个文件地址：/sys/class/net
 get_machine_id()：  系统id  /etc/machine-id    或者docker环境id /proc/self/cgroup
 ```
 
+
+
+## nodejs中的parseInt函数
+
+![image-20240425233112822](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425233112822.png)
+
+绕过:
+
+![image-20240425233145410](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425233145410.png)
+
+
+
+![image-20240425233157687](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425233157687.png)

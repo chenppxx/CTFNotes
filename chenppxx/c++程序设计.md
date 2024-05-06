@@ -31,3 +31,27 @@
 需要使用
 
 `#define INT_MIN	(-2147483647 - 1) `
+
+
+
+# 字符串函数
+
+```cpp
+extern char strcat(char dest, const char src);
+```
+
+> `strcat` 函数将 `src` 串拼接到 `dest` 串之后
+
+```cpp
+extern char strstr(char str1, const char str2);
+```
+
+> ```
+> strstr` 函数在 `str1` 串内查找 `str2` 串的位置，如未找到，则返回 `NULL
+> ```
+
+```cpp
+extern char strcpy(char dest, const char src);
+```
+
+> `strcpy` 函数将 `src` 串复制到 `dest` 串

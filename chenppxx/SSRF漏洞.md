@@ -222,3 +222,30 @@ http://www.xxx.com@www.xxc.com
 （1）采取302跳转
 （2）采取短地址
 
+
+
+# gopher为协议
+
+![image-20240426173303910](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240426173303910.png)
+
+
+
+![image-20240426175619257](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240426175619257.png)
+
+
+
+# gopher攻击mysql
+
+使用工具**Gopherus**
+
+python gopherus.py --exploit mysql
+
+![image-20240503143102257](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240503143102257.png)
+
+将输出内容复制下来后,
+
+burp传过去就行，但是注意要先url编码一下
+
+参考连接:
+
+[CTFSHOW-日刷-红包题第九弹-SSRF-Gopher攻击mysql - Aninock - 博客园 (cnblogs.com)](https://www.cnblogs.com/aninock/p/15663953.html)
