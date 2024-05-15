@@ -595,7 +595,6 @@ echo $chen."<br />";
 
 
 
-
 ### substr(),mid()绕过
 
 ##### Left()函数
@@ -1011,6 +1010,7 @@ session文件的值也就对应了 HTTP 请求 Cookie 中`phpMyAdmin`的值。
 
 ## 覆盖试验漏洞
 
+```
 <?php
 
 include 'flag.php';
@@ -1045,11 +1045,13 @@ if($_POST['flag'] === 'flag'  || $_GET['flag'] === 'flag'){
 
 echo "the flag is: ".$flag;
 }
+```
 
 上述为源码
 
 核心代码:
 
+```
 foreach($_POST as $x => $y){　　　　
     $$x = $y  ;  //post 声明至当前文件
 }
@@ -1057,6 +1059,9 @@ foreach($_POST as $x => $y){　　　　
 foreach($_GET as $x => $y){　　　 
     $$x = $$y;  //GET型变量重新赋值为当前文件变量中以其值为键名的值
 }
+```
+
+
 
 ### 通过第一个exit输出flag:
 
@@ -1610,5 +1615,48 @@ php短标签
 <% echo '123';%>   #开启配置参数asp_tags=on，并且只能在7.0以下版本使用
 <script language="php">echo '123'; </script> #不需要修改参数开关，但是只能在7.0以下可用。
  
+```
+
+
+
+## mt_rand
+
+伪随机数是用确定性的算法计算出来的随机数序列，它并不真正的随机，但具有类似于随机数的统计特征，如均匀性、独立性等。在计算伪随机数时，若使用的初值（种子）不变，那么伪随机数的数序也不变。伪随机数可以用计算机大量生成，在模拟研究中为了提高模拟效率，一般采用伪随机数代替真正的随机数。模拟中使用的一般是循环周期极长并能通过随机数检验的伪随机数，以保证计算结果的随机性。伪随机数的生成方法有线性同余法、单向散列函数法、密码法等。
+
+
+- 将已知的部分伪随机数转化为php_mt_seed工具可以看懂的数据
+
+```
+str1 ='Hg11vtADEm'
+str2 = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+result =''
+
+
+length = str(len(str2)-1)
+for i in range(0,len(str1)):
+    for j in range(0,len(str2)):
+        if str1[i] ==  str2[j]:
+            result += str(j) + ' ' +str(j) + ' ' + '0' + ' ' + length + ' '
+            break
+
+
+print(result)
+```
+
+- php_mt_seed工具
+
+![image-20240515105204733](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240515105204733.png)
+
+
+
+## 内网探测命令
+
+```
+/etc/hosts
+/proc/net/arp
+/proc/net/tcp
+/proc/net/udp
+/proc/net/dev
+/proc/net/fib_trie
 ```
 

